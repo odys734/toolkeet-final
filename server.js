@@ -9,70 +9,79 @@ app.use(express.json());
 
 app.post("/chat", async (req, res) => {
 
-try {
+  const msg = req.body.message;
 
-const response = await fetch(
-  "https://openrouter.ai/api/v1/chat/completions",
-  {
-    method: "POST",
+  try {
 
-    headers: {
-      "Authorization":
-        `Bearer ${process.env.OPENROUTER_API_KEY}`,
+    const response = await fetch(
 
-      "HTTP-Referer":
-        "https://toolkeet.local",
+      "https://openrouter.ai/api/v1/chat/completions",
 
-      "X-Title":
-        "ToolKeet",
+      {
 
-      "Content-Type":
-        "application/json"
-    },
+        method: "POST",
 
-    body: JSON.stringify({
+        headers: {
 
-      model:
-        "openai/gpt-3.5-turbo",
+          "Authorization":
+          `Bearer ${process.env.OPENROUTER_API_KEY}`,
 
-      messages: [
-        {
-          role: "user",
-          content: req.body.message
-        }
-      ]
+          "Content-Type":
+          "application/json"
 
-    })
+        },
+
+        body: JSON.stringify({
+
+          model:
+          "openai/gpt-4o-mini",
+
+          max_tokens: 200,
+
+          messages: [
+            {
+              role: "user",
+              content: msg
+            }
+          ]
+
+        })
+
+      }
+
+    );
+
+    const data = await response.json();
+
+    console.log(data);
+
+    const reply =
+
+      data.choices?.[0]
+      ?.message?.content
+
+      || "No response";
+
+    res.json({
+      reply: reply
+    });
+
+  } catch (err) {
+
+    console.log(err);
+
+    res.json({
+      reply: "Server Error"
+    });
+
   }
-);
 
-const data = await response.json();
-
-console.log(data);
-
-if(data.error){
-
-  return res.status(500).json({
-    reply: data.error.message
-  });
-}
-
-res.json({
-  reply:
-  data.choices[0].message.content
-});
-
-} catch (error) {
-
-console.log(error);
-
-res.status(500).json({
-  reply: "Server Error"
-});
-
-}
 });
 
 app.listen(3000, () => {
-console.log("ToolKeet AI Running");
+
+  console.log(
+    "ToolKeet AI Running 🚀"
+  );
+
 });
